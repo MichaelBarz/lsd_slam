@@ -342,6 +342,8 @@ UndistorterPTAM::UndistorterPTAM(const char* configFileName)
 	K_.at<double>(2, 2) = 1;
 	K_.at<double>(2, 0) = outputCalibration[2] * out_width - 0.5;
 	K_.at<double>(2, 1) = outputCalibration[3] * out_height - 0.5;
+
+	printf("%f %f %f %f", K_.at<double>(0, 0), K_.at<double>(1, 1), K_.at<double>(2, 0), K_.at<double>(2, 1)  );
 }
 
 UndistorterPTAM::~UndistorterPTAM()
@@ -403,6 +405,48 @@ void UndistorterPTAM::undistort(const cv::Mat& image, cv::OutputArray result) co
 
 			// interpolate (bilinear)
 			data[idx] =  xxyy * src[1+in_width]
+			                    + (yy-xxyy) * src[in_width]
+			                    + (xx-xxyy) * src[1]
+			                    + (1-xx-yy+xxyy) * src[0];
+		}
+	}
+}
+void UndistorterOpenCV::undistort2(uchar * src,uchar * dst) const
+{
+	dst = src;
+}
+void UndistorterPTAM::undistort2(uchar * img,uchar * dst) const
+{
+	// read out_height and out_width from python and create numpy array there
+	// pass ref to this array as "dst" parameter
+
+	if (!valid)
+	{
+		dst = img;
+		return;
+	}
+
+	for(int idx = out_width*out_height-1;idx>=0;idx--)
+	{
+		// get interp. values
+		float xx = remapX[idx];
+		float yy = remapY[idx];
+
+		if(xx<0)
+			dst[idx] = 0;
+		else
+		{
+			// get integer and rational parts
+			int xxi = xx;
+			int yyi = yy;
+			xx -= xxi;
+			yy -= yyi;
+			float xxyy = xx*yy;
+
+			const uchar* src = img + xxi + yyi * in_width;
+
+			// interpolate (bilinear)
+			dst[idx] =  xxyy * src[1+in_width]
 			                    + (yy-xxyy) * src[in_width]
 			                    + (xx-xxyy) * src[1]
 			                    + (1-xx-yy+xxyy) * src[0];
