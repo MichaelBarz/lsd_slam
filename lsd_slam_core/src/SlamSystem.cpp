@@ -19,6 +19,7 @@
 */
 
 #include "SlamSystem.h"
+#include <typeinfo>
 
 #include "DataStructures/Frame.h"
 #include "Tracking/SE3Tracker.h"
@@ -170,7 +171,17 @@ SlamSystem::~SlamSystem()
 
 void SlamSystem::setVisualization(Output3DWrapper* outputWrapper)
 {
+	printf("type: %s\n", typeid(outputWrapper).name());
+	printf("addr: %d\n", outputWrapper);
+	if (outputWrapper == nullptr){
+		printf("NULL\n");
+	}
+
+	printf("type: %s\n", typeid(this->outputWrapper).name());
+	printf("addr: %d\n", this->outputWrapper);
 	this->outputWrapper = outputWrapper;
+	printf("Setting vist\n");
+
 }
 
 void SlamSystem::mergeOptimizationOffset()
