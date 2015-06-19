@@ -30,11 +30,11 @@
 #include <dirent.h>
 #include <algorithm>
 
-#include "IOWrapper/ROS/ROSOutput3DWrapper.h"
-#include "IOWrapper/ROS/rosReconfigure.h"
+//#include "IOWrapper/ROS/ROSOutput3DWrapper.h"
+//#include "IOWrapper/ROS/rosReconfigure.h"
 
 #include "util/Undistorter.h"
-#include <ros/package.h>
+//#include <ros/package.h>
 
 #include "opencv2/opencv.hpp"
 
@@ -127,27 +127,29 @@ int getFile (std::string source, std::vector<std::string> &files)
 using namespace lsd_slam;
 int main( int argc, char** argv )
 {
-	ros::init(argc, argv, "LSD_SLAM");
+	//ros::init(argc, argv, "LSD_SLAM");
 
-	dynamic_reconfigure::Server<lsd_slam_core::LSDParamsConfig> srv(ros::NodeHandle("~"));
-	srv.setCallback(dynConfCb);
+	//dynamic_reconfigure::Server<lsd_slam_core::LSDParamsConfig> srv(ros::NodeHandle("~"));
+	//srv.setCallback(dynConfCb);
 
-	dynamic_reconfigure::Server<lsd_slam_core::LSDDebugParamsConfig> srvDebug(ros::NodeHandle("~Debug"));
-	srvDebug.setCallback(dynConfCbDebug);
+	//dynamic_reconfigure::Server<lsd_slam_core::LSDDebugParamsConfig> srvDebug(ros::NodeHandle("~Debug"));
+	//srvDebug.setCallback(dynConfCbDebug);
 
-	packagePath = ros::package::getPath("lsd_slam_core")+"/";
+	//packagePath = ros::package::getPath("lsd_slam_core")+"/";
 
 
 
 	// get camera calibration in form of an undistorter object.
 	// if no undistortion is required, the undistorter will just pass images through.
-	std::string calibFile;
+	std::string calibFile = argv[1];
 	Undistorter* undistorter = 0;
-	if(ros::param::get("~calib", calibFile))
-	{
-		 undistorter = Undistorter::getUndistorterForFile(calibFile.c_str());
-		 ros::param::del("~calib");
-	}
+	//if(ros::param::get("~calib", calibFile))
+	undistorter = Undistorter::getUndistorterForFile(calibFile.c_str());
+
+//	{
+//		 undistorter = Undistorter::getUndistorterForFile(calibFile.c_str());
+//		 ros::param::del("~calib");
+//	}
 
 	if(undistorter == 0)
 	{
@@ -170,24 +172,24 @@ int main( int argc, char** argv )
 
 
 	// make output wrapper. just set to zero if no output is required.
-	Output3DWrapper* outputWrapper = new ROSOutput3DWrapper(w,h);
+//	Output3DWrapper* outputWrapper = new ROSOutput3DWrapper(w,h);
 
 
 	// make slam system
 	SlamSystem* system = new SlamSystem(w, h, K, doSlam);
-	system->setVisualization(outputWrapper);
+//	system->setVisualization(outputWrapper);
 
 
 
 	// open image files: first try to open as file.
-	std::string source;
+	std::string source = argv[2];
 	std::vector<std::string> files;
-	if(!ros::param::get("~files", source))
-	{
-		printf("need source files! (set using _files:=FOLDER)\n");
-		exit(0);
-	}
-	ros::param::del("~files");
+//	if(!ros::param::get("~files", source))
+//	{
+//		printf("need source files! (set using _files:=FOLDER)\n");
+//		exit(0);
+//	}
+//	ros::param::del("~files");
 
 
 	if(getdir(source, files) >= 0)
@@ -206,10 +208,10 @@ int main( int argc, char** argv )
 
 
 	// get HZ
-	double hz = 0;
-	if(!ros::param::get("~hz", hz))
-		hz = 0;
-	ros::param::del("~hz");
+	double hz = 30.0;
+//	if(!ros::param::get("~hz", hz))
+//		hz = 0;
+//	ros::param::del("~hz");
 
 
 
@@ -217,7 +219,7 @@ int main( int argc, char** argv )
 	int runningIDX=0;
 	float fakeTimeStamp = 0;
 
-	ros::Rate r(hz);
+//	ros::Rate r(hz);
 
 	for(unsigned int i=0;i<files.size();i++)
 	{
@@ -245,8 +247,8 @@ int main( int argc, char** argv )
 		runningIDX++;
 		fakeTimeStamp+=0.03;
 
-		if(hz != 0)
-			r.sleep();
+//		if(hz != 0)
+//			r.sleep();
 
 		if(fullResetRequested)
 		{
@@ -255,16 +257,16 @@ int main( int argc, char** argv )
 			delete system;
 
 			system = new SlamSystem(w, h, K, doSlam);
-			system->setVisualization(outputWrapper);
+//			system->setVisualization(outputWrapper);
 
 			fullResetRequested = false;
 			runningIDX = 0;
 		}
 
-		ros::spinOnce();
-
-		if(!ros::ok())
-			break;
+//		ros::spinOnce();
+//
+//		if(!ros::ok())
+//			break;
 	}
 
 
@@ -274,6 +276,6 @@ int main( int argc, char** argv )
 
 	delete system;
 	delete undistorter;
-	delete outputWrapper;
+//	delete outputWrapper;
 	return 0;
 }

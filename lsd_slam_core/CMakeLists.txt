@@ -91,8 +91,8 @@ target_link_libraries(lsdslam ${FABMAP_LIB} g2o_core g2o_stuff cxsparse g2o_solv
 
 
 # build image node
-# add_executable(dataset_slam src/main_on_images.cpp)
-# target_link_libraries(dataset_slam lsdslam)
+add_executable(dataset_slam src/main_on_images.cpp)
+target_link_libraries(dataset_slam lsdslam)
 
 # build image node
 add_executable(opencv_slam src/main_opencv.cpp)
